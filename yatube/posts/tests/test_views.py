@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Comment, Follow, Group, Post, User
+from ..models import Follow, Group, Post, User
 
 User = get_user_model()
 
