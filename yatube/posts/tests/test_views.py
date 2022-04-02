@@ -107,8 +107,9 @@ class PostPagesTests(TestCase):
         response = self.authorized_client.get(
             reverse("posts:post_detail", kwargs={"post_id": post.id})
         )
-        self.assertEqual(response.context["post"].text, self.post.text)
-        self.assertEqual(response.context["post"].image, self.post.image)
+        post_var = response.context["post"]
+        self.assertEqual(post_var.text, self.post.text)
+        self.assertEqual(post_var.image, self.post.image)
 
     def test_post_edit_show_correct_context(self):
         response = self.authorized_client.get(
@@ -141,40 +142,6 @@ class PostPagesTests(TestCase):
         response = self.guest_client.get("not_found").status_code
         self.assertEqual(response, HTTPStatus.NOT_FOUND, "Ошибка 404 страницы")
 
-    def test_send_post_with_image(self):
-        response = self.authorized_client.get(reverse("posts:post_create"))
-        form_fields = {
-            "group": forms.fields.ChoiceField,
-            "text": forms.fields.CharField,
-            "image": forms.fields.ImageField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_field = response.context["form"].fields[value]
-                self.assertIsInstance(form_field, expected)
-
-    def test_authorized_user_can_write_comment(self):
-        comment_count = Comment.objects.count()
-        form_data = {"text": "Текст комментария"}
-        kwargs = {"post_id": self.post.id}
-        response = self.authorized_client.post(
-            reverse("posts:add_comment", kwargs=kwargs),
-            data=form_data,
-            follow=True,
-        )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(Comment.objects.count(), comment_count + 1)
-        self.assertRedirects(
-            response, reverse("posts:post_detail", kwargs=kwargs)
-        )
-        self.assertTrue(
-            Comment.objects.filter(
-                text="Текст комментария",
-                author=self.user,
-                post=self.post,
-            )
-        )
-
     def test_cache_index_page(self):
         response = self.authorized_client.get(reverse("posts:index"))
         content = response.content
@@ -198,6 +165,9 @@ class PostPagesTests(TestCase):
             ).exists()
         )
         self.assertEqual(Follow.objects.count(), follower_count + 1)
+        follower = Follow.objects.order_by("-id").first()  # свежая запись
+        self.assertEqual(follower.user, self.user)
+        self.assertEqual(follower.author, self.another_user)
 
     def test_autorized_user_can_unfollow(self):
         Follow.objects.create(user=self.user, author=self.another_user)
@@ -220,13 +190,23 @@ class PostPagesTests(TestCase):
         post_count = len(response.context["page_obj"])
         Post.objects.create(
             author=self.another_user,
-            text="Тестовый текст",
+            text=self.post.text,
         )
         Follow.objects.create(user=self.user, author=self.another_user)
         response = self.authorized_client.get(
             reverse("posts:follow_index")
         )  # обновление
         self.assertEqual(len(response.context["page_obj"]), post_count + 1)
+        self.authorized_client.post(
+            reverse(
+                "posts:profile_unfollow",
+                kwargs={"username": self.another_user},
+            )
+        )  # отписка
+        response = self.authorized_client.get(
+            reverse("posts:follow_index")
+        )  # обновление
+        self.assertEqual(len(response.context["page_obj"]), post_count)
 
 
 class PaginatorViewsTest(TestCase):

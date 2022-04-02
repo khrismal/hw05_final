@@ -66,6 +66,20 @@ class PostURLTest(TestCase):
         response = self.guest_client.get(f"/posts/{self.post.id}/")
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
+    def test_follow_exists_at_desired_location_autorized(self):
+        response = self.authorized_client.get("/follow/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_comment_exists_at_desired_location_autorized(self):
+        response = self.authorized_client.get(
+            f"/posts/{self.post.id}/comment/"
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_not_autorized_user_can_follow(self):
+        response = self.guest_client.get("/profile/username/follow/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
     def test_posts_edit_url_exists_at_desired_location_authorized(self):
         response = self.authorized_client.get(f"/posts/{self.post.id}/edit/")
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -97,6 +111,7 @@ class PostURLTest(TestCase):
             "posts/post_detail.html": f"/posts/{self.post.id}/",
             "posts/create_post.html": "/create/",
             "posts/update_post.html": f"/posts/{self.post.id}/edit/",
+            "posts/follow.html": "/follow/",
         }
         for template, address in templates_url_names.items():
             with self.subTest(address=address):
