@@ -144,3 +144,19 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(form_data["text"], last_comment.text)
         self.assertEqual(self.user, last_comment.author)
         self.assertEqual(self.post, last_comment.post)
+
+    def test_unauthorized_user_cannot_write_comment(self):
+        comment_count = Comment.objects.count()
+        form_data = {"text": self.post.text}
+        kwargs = {"post_id": self.post.id}
+        response = self.non_auth_client.post(
+            reverse("posts:add_comment", kwargs=kwargs),
+            data=form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotEqual(Comment.objects.count(), comment_count + 1)
+        self.assertRedirects(
+            response,
+            f"{reverse('users:login')}?next={reverse('posts:add_comment', kwargs=kwargs)}",
+        )

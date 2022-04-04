@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} Профайл пользователя {{author}} {% endblock %}<!--имя пользователя-->
+{% block title %} Профайл пользователя {{ author }} {% endblock %}<!--имя пользователя-->
 {% load thumbnail %}
 {% block content %}
 
@@ -25,7 +25,7 @@
       </div> <!--end of new block-->
 
     {% for post in page_obj %} 
-          <article>
+      <article>
             <ul>
               <li>
                 Автор: {{ post.author.get_full_name }}<!--Лев Толстой-->
