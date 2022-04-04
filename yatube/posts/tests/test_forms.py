@@ -158,5 +158,8 @@ class PostCreateFormTests(TestCase):
         self.assertNotEqual(Comment.objects.count(), comment_count + 1)
         self.assertRedirects(
             response,
-            f"{reverse('users:login')}?next={reverse('posts:add_comment', kwargs=kwargs)}",
+            (
+                f"{reverse('users:login')}?next="
+                f"{reverse('posts:add_comment', kwargs=kwargs)}"
+            ),
         )
