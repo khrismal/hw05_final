@@ -22,7 +22,7 @@
                 Автор: {{ post.author.get_full_name }}<!--Лев Толстой-->
               </li>
               <li class="list-group-item d-flex justify-content-between align-items-center">
-              Всего постов автора:  <span >{{ posts.count }}</span> <!--{{ post_count }}-->
+              Всего постов автора:  <span >{{ posts_count }}</span> <!--{{ post_count }}-->
             </li>
             <li class="list-group-item">
               <a href="{% url 'posts:profile' post.author %}">
