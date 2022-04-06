@@ -201,12 +201,7 @@ class PostPagesTests(TestCase):
     def test_new_post_for_unfollowers(self):
         response = self.authorized_client.get(reverse("posts:follow_index"))
         post_count = len(response.context["page_obj"])
-        self.authorized_client.post(
-            reverse(
-                "posts:profile_unfollow",
-                kwargs={"username": self.another_user},
-            )
-        )  # отписка
+        Follow.objects.filter(author=self.another_user).delete()
         Post.objects.create(
             author=self.another_user,
             text=self.post.text,
